@@ -22,15 +22,15 @@ class Data(object):
         self.__state = STATE2CODE[state]
 
     @property
-    def message(self):
+    def message(self) -> str:
         return deepcopy(self.__message)
 
     @property
-    def seq(self):
+    def seq(self) -> int:
         return self.__seq
 
     @property
-    def state(self):
+    def state(self) -> str:
         return CODE2STATE[self.__state]
 
     def __check_state(self, state_code: int) -> bool:
