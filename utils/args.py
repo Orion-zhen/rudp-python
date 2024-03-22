@@ -10,16 +10,16 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "server-send-port", "-ssp", type=int, default=50001, help="Server send port"
+    "--server-send-port", "-ssp", type=int, default=50001, help="Server send port"
 )
 parser.add_argument(
-    "server-recv-port", "-srp", type=int, default=50002, help="Server receive port"
+    "--server-recv-port", "-srp", type=int, default=50002, help="Server receive port"
 )
 parser.add_argument(
-    "client-send-port", "-csp", type=int, default=50003, help="Client send port"
+    "--client-send-port", "-csp", type=int, default=50003, help="Client send port"
 )
 parser.add_argument(
-    "client-recv-port", "-crp", type=int, default=50004, help="Client receive port"
+    "--client-recv-port", "-crp", type=int, default=50004, help="Client receive port"
 )
 
 parser.add_argument("--buffer", "-b", type=int, default=1024, help="Buffer size")
