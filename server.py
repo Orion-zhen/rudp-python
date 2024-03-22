@@ -1,4 +1,4 @@
-import threading
+import _thread
 from utils.args import args
 from utils.device import Device
 
@@ -11,13 +11,12 @@ if __name__ == "__main__":
         args.server_recv_port, args.client_host, args.client_send_port, args.protocol
     )
 
-    send_thread = threading.Thread(
-        target=send_device.send, args=(args.data_path + "/server_data.txt",)
-    )
-    recv_thread = threading.Thread(target=recv_device.recv(), args=())
-    # recv_device.recv()
+    lock = _thread.allocate_lock()
 
-    send_thread.start()
-    recv_thread.start()
-    send_thread.join()
-    recv_thread.join()
+    _thread.start_new_thread(
+        send_device.send, (args.data_path + "/server_data.txt", lock)
+    )
+    recv_device.recv()
+
+    while lock.locked():
+        pass

@@ -34,13 +34,13 @@ class Device(object):
 
             self.__protocol = SW(self.__socket, target_host, target_port)
 
-    def send(self, data_path: str):
+    def send(self, data_path: str, lock=None):
         """通过这个设备发送数据
 
         Args:
             data_path (str): 要发送的数据文件的路径
         """
-        self.__protocol.send(data_path)
+        self.__protocol.send(data_path, lock)
 
     def recv(self) -> List[str]:
         """从这个设备接收数据

@@ -54,13 +54,14 @@ class SW(object):
     def buffer(self) -> int:
         return self.__buffer_size
 
-    def send(self, data_path: str) -> None:
+    def send(self, data_path: str, lock=None) -> None:
         """使用SW协议向目的主机发送数据
 
         Args:
             data_path (str): 需要发送的文件路径
         """
-
+        if lock:
+            lock.acquire()
         # 初始化发送机
         seq = 0 # 将要发送的包的序列号
         last_data: Data = None # 上一次发送的数据包
@@ -105,6 +106,8 @@ class SW(object):
         # 结束发送
         f.close()
         self.source_socket.close()
+        if lock:
+            lock.release()
         
     def recv(self) -> List[str]:
         """使用SW协议从目的主机接收数据
