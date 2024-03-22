@@ -39,7 +39,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--data-dir", "-d", type=str, default="./data", help="Data directory"
+    "--data-path", "-d", type=str, default="./data", help="Data directory"
 )
 
 args = parser.parse_args()
