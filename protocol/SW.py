@@ -137,6 +137,7 @@ class SW(object):
                     if message == "<EOF>":
                         # 收到终止包
                         self.source_socket.close()
+                        # print(ret)
                         return ret
                     fmt_print(body)
-                    ret.append(buffer.split(" ")[1])
+                    ret.append(message)

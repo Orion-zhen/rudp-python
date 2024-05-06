@@ -177,6 +177,7 @@ class SR(object):
                 if ack_seq == -1:
                     # 收到终止包
                     self.source_socket.close()
+                    # print(ret)
                     return ret
                 elif message != "<EOF>":
                     window[ack_seq] = deepcopy(message)
@@ -184,6 +185,7 @@ class SR(object):
 
                     # 更新当前期待的包序号
                     while window[current_ack] is not None:
+                        # if window[current_ack] not in ret:
                         ret.append(window[current_ack])
                         # 取走数据
                         window[current_ack] = None

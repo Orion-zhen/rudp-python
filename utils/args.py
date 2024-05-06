@@ -25,7 +25,7 @@ parser.add_argument(
 parser.add_argument("--buffer", "-b", type=int, default=1024, help="Buffer size")
 parser.add_argument("--timeout", "-t", type=int, default=3, help="Timeout in seconds")
 parser.add_argument(
-    "--lost-rate", "-lr", type=float, default=0.2, help="Packeges lost rate"
+    "--lost-rate", "-lr", type=float, default=0, help="Packeges lost rate"
 )
 
 parser.add_argument(

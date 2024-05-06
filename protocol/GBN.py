@@ -165,6 +165,7 @@ class GBN(object):
 
                         if message == "<EOF>":
                             self.source_socket.close()
+                            # print(ret)
                             return ret
 
                         fmt_print(body)
