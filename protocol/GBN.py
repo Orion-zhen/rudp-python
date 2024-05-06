@@ -1,9 +1,11 @@
+import json
 import select
 from typing import List
 from typing import Tuple
 from random import random
 from utils.args import args
 from utils.data import Data
+from utils.common import encapsulate, fmt_print
 
 LOST_RATE = args.lost_rate
 
@@ -98,7 +100,7 @@ class GBN(object):
             for data in window:
                 if data.state == "NOT_SENT":
                     self.source_socket.sendto(
-                        (str(data.seq) + " " + data.message).encode(), self.target
+                        encapsulate(data.seq, data.message).encode(), self.target
                     )
                     data.switch("SENT_NOT_ACKED")
 
@@ -143,9 +145,11 @@ class GBN(object):
         while True:
             readable_list, _, _ = select.select([self.source_socket], [], [], 10)
             if len(readable_list) > 0:
-                data, addr = self.source_socket.recvfrom(self.buffer)
-                data = data.decode()
-                ack_seq = int(data.split(" ")[0])
+                buffer, addr = self.source_socket.recvfrom(self.buffer)
+                buffer = buffer.decode()
+                body = json.loads(buffer)
+                ack_seq = body["seq"]
+                message = body["message"]
                 if (ack_seq - 1) % self.seq_size == last_ack:
                     # ACK序号正确
                     if random() < LOST_RATE:
@@ -159,12 +163,12 @@ class GBN(object):
                     if ack_seq not in window:
                         window.append(ack_seq)
 
-                        if data.split(" ")[1] == "<EOF>":
+                        if message == "<EOF>":
                             self.source_socket.close()
                             return ret
 
-                        print(data)
-                        ret.append(data.split(" ")[1])
+                        fmt_print(body)
+                        ret.append(message)
 
                     while len(window) > self.window_size:
                         window.pop(0)

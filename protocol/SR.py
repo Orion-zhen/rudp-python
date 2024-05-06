@@ -1,3 +1,4 @@
+import json
 import select
 from typing import List
 from typing import Tuple
@@ -5,6 +6,7 @@ from random import random
 from copy import deepcopy
 from utils.args import args
 from utils.data import Data
+from utils.common import encapsulate, fmt_print
 
 LOST_RATE = args.lost_rate
 
@@ -99,7 +101,7 @@ class SR(object):
             for data in window:
                 if data.state == "NOT_SENT":
                     self.source_socket.sendto(
-                        (str(data.seq) + " " + data.message).encode(), self.target
+                        encapsulate(data.seq, data.message).encode(), self.target
                     )
                     data.switch("SENT_NOT_ACKED")
 
@@ -131,7 +133,7 @@ class SR(object):
         clock = 0
         while seq == 0:
             if clock == 0:
-                self.source_socket.sendto("-1 <EOF>".encode(), self.target)
+                self.source_socket.sendto(encapsulate(-1, "<EOF>").encode(), self.target)
 
             # 接收传输应答
             readable_list, _, _ = select.select([self.source_socket], [], [], 1)
@@ -163,20 +165,22 @@ class SR(object):
         while True:
             readable_list, _, _ = select.select([self.source_socket], [], [], 1)
             if len(readable_list) > 0:
-                data, _ = self.source_socket.recvfrom(self.buffer)
-                data = data.decode()
-                ack_seq = int(data.split(" ")[0])
+                buffer, _ = self.source_socket.recvfrom(self.buffer)
+                buffer = buffer.decode()
+                body = json.loads(buffer)
+                ack_seq = body["seq"]
+                message = body["message"]
 
                 if random() < LOST_RATE:
                     continue
                 self.source_socket.sendto(str(ack_seq).encode(), self.target)
-                if data.split(" ")[0] == "-1":
+                if ack_seq == -1:
                     # 收到终止包
                     self.source_socket.close()
                     return ret
-                elif data.split(" ")[1] != "<EOF>":
-                    window[ack_seq] = deepcopy(data.split(" ")[1])
-                    print(data)
+                elif message != "<EOF>":
+                    window[ack_seq] = deepcopy(message)
+                    fmt_print(body)
 
                     # 更新当前期待的包序号
                     while window[current_ack] is not None:

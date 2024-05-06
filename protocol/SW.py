@@ -1,9 +1,11 @@
+import json
 import select
 from typing import List
 from typing import Tuple
 from random import random
 from utils.args import args
 from utils.data import Data
+from utils.common import encapsulate, fmt_print
 
 LOST_RATE = args.lost_rate
 
@@ -49,7 +51,7 @@ class SW(object):
     @property
     def target(self) -> Tuple[str, int]:
         return self.__target
-    
+
     @property
     def buffer(self) -> int:
         return self.__buffer_size
@@ -63,8 +65,8 @@ class SW(object):
         if lock:
             lock.acquire()
         # 初始化发送机
-        seq = 0 # 将要发送的包的序列号
-        last_data: Data = None # 上一次发送的数据包
+        seq = 0  # 将要发送的包的序列号
+        last_data: Data = None  # 上一次发送的数据包
         f = open(data_path, "r")
 
         # 开始发送
@@ -72,7 +74,7 @@ class SW(object):
             line = f.readline().strip()
             if not line:
                 break
-            
+
             # 这里模拟发送初始的数据包
             last_data = Data(line, seq % self.seq_size)
             # 准备发送下一个数据包
@@ -86,7 +88,7 @@ class SW(object):
                     # 若超时, 则重传上一个数据包, 并重置计时器
                     print("time out, try to resend")
                     self.source_socket.sendto(
-                        (str(last_data.seq) + " " + last_data.message).encode(),
+                        encapsulate(last_data.seq, last_data.message).encode(),
                         self.target,
                     )
                     clock = 0
@@ -99,16 +101,16 @@ class SW(object):
                         ack = int(ack.decode())
                     except:
                         print("Error: ACK receive failed")
-                
+
                 # 什么消息都没收到, 等待并且增加计时器
                 clock += 1
-                
+
         # 结束发送
         f.close()
         self.source_socket.close()
         if lock:
             lock.release()
-        
+
     def recv(self) -> List[str]:
         """使用SW协议从目的主机接收数据
 
@@ -116,23 +118,25 @@ class SW(object):
             List[str]: 收到的数据列表
         """
         ret = []
-        
+
         while True:
             readable_list, _, _ = select.select([self.source_socket], [], [], 1)
-            
+
             if len(readable_list) > 0:
-                message, _ = self.source_socket.recvfrom(self.buffer)
-                message = message.decode()
+                buffer, _ = self.source_socket.recvfrom(self.buffer)
+                buffer = buffer.decode()
+                body = json.loads(buffer)
                 # 解码并获得序列号
-                ack_seq = int(message.split(" ")[0])
-                
+                ack_seq = body["seq"]
+                message = body["message"]
+
                 if random() > LOST_RATE:
                     # 随机成功收到包
                     self.source_socket.sendto(str(ack_seq).encode(), self.target)
-                    
-                    if message.split(" ")[1] == "<EOF>":
+
+                    if message == "<EOF>":
                         # 收到终止包
                         self.source_socket.close()
                         return ret
-                    print(message)
-                    ret.append(message.split(" ")[1])
+                    fmt_print(body)
+                    ret.append(buffer.split(" ")[1])
