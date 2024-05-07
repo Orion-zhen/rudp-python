@@ -12,6 +12,7 @@ if __name__ == "__main__":
     recv_data = []
     recved_seq = -1
     expect_seq = recved_seq + 1
+    f = open("recv.png", "wb")
     while True:
         buffer, addr = recver.recvfrom(2048)
         recved_seq, checksum, eof_flag, payload = de_pkt(buffer)
@@ -26,10 +27,11 @@ if __name__ == "__main__":
         # 是正确顺序的报文
         if recved_seq == expect_seq:
             expect_seq += 1
+            f.write(payload)
             recv_data.append(payload)
         
         recver.sendto(str(expect_seq).encode(), addr)
         
-    with open("recv.png", "wb") as f:
-        for data in recv_data:
-            f.write(data)
+    # with open("recv.png", "wb") as f:
+    #     for data in recv_data:
+    #         f.write(data)
