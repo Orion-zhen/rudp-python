@@ -124,7 +124,7 @@ class GBN(object):
         print(f"Resend rate:{self.resend_pkg_cnt / len(self.data_list)}")
         with open("gbn_data.txt", 'w') as f:
             f.write(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}")
-            f.write(f"Resend rate:{self.resend_pkg_cnt_pkg_cnt / len(self.data_list)}")
+            f.write(f"Resend rate:{self.resend_pkg_cnt / len(self.data_list)}")
 
 
     def recv(self):
