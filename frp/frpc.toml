@@ -1,0 +1,16 @@
+serverAddr = "123.56.42.16"
+serverPort = 5000
+
+[[proxies]]
+name = "test-tcp"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000
+
+[[proxies]]
+name = "rudp-recv-from-remote"
+type = "udp"
+localIP = "127.0.0.1"
+localPort = 9999
+remotePort = 9999
