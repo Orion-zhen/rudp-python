@@ -29,6 +29,7 @@ class SR(object):
         self.buffer_size = buffer_size
         self.lock = threading.Lock()
         self.timers = [None] * len(self.data_list)
+        self.lost_pkg_cnt = 0
         for i in range(len(self.data_list)):
             self.timers[i] = threading.Timer(self.timeout, self.timeout_handler, args=[i])
 
@@ -42,6 +43,7 @@ class SR(object):
         self.timers[seq_num] = threading.Timer(self.timeout, self.timeout_handler, args=[seq_num])
         self.timers[seq_num].start()
         print(f"Timeout, resend {seq_num}")
+        self.lost_pkg_cnt += 1
         self.lock.release()
 
     def send(self):
@@ -77,6 +79,7 @@ class SR(object):
             # 如果和上一次确认号相同, 则说明发生丢包, 此时应重传这个包
             if ack_seq == last_ack:
                 print(f"duplicate ack {ack_seq}")
+                self.lost_pkg_cnt += 1
                 resend_pkt = make_pkt(ack_seq, self.data_list[ack_seq])
                 self.sender.sendto(resend_pkt, self.target)
                 # 重启定时器
@@ -98,6 +101,12 @@ class SR(object):
 
         eof_pkt = make_pkt(len(self.data_list), "".encode(), True)
         self.sender.sendto(eof_pkt, self.target)
+        print("------------------")
+        print(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}")
+        print(f"Resend rate:{self.lost_pkg_cnt / len(self.data_list)}")
+        with open("sr_data.txt") as f:
+            f.write(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}")
+            f.write(f"Resend rate:{self.lost_pkg_cnt / len(self.data_list)}")
 
     def recv(self):
         # 是否收到对应的包

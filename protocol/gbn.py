@@ -36,6 +36,8 @@ class GBN(object):
         self.buffer_size = buffer_size
         self.lock = threading.Lock()
         self.timers = [None] * len(self.data_list)
+        self.lost_pkg_cnt = 0
+        self.resend_pkg_cnt = 0
         for i in range(len(self.data_list)):
             self.timers[i] = threading.Timer(
                 self.timeout, self.timeout_handler, args=[i]
@@ -51,6 +53,8 @@ class GBN(object):
         self.timers[seq_num] = threading.Timer(self.timeout, self.timeout_handler, args=[seq_num])
         self.timers[seq_num].start()
         print(f"Timeout, resend {seq_num}")
+        self.lost_pkg_cnt += 1
+        self.resend_pkg_cnt += 1
         self.lock.release()
 
     def send(self):
@@ -86,8 +90,11 @@ class GBN(object):
             # 如果和上一次确认号相同, 则说明发生丢包, 此时应回退整个窗口
             if ack_seq == last_ack:
                 print(f"duplicate ack {ack_seq}")
+                self.lost_pkg_cnt += 1
                 seq_to_send = last_ack
                 base_seq = last_ack
+                N = min(base_seq + self.wd_size, len(self.data_list)) - base_seq
+                self.resend_pkg_cnt += N
                 for i in range(
                     base_seq, min(base_seq + self.wd_size, len(self.data_list))
                 ):
@@ -112,10 +119,17 @@ class GBN(object):
         # 传输结束, 发送中止包
         eof_pkt = make_pkt(base_seq, "".encode(), stop=True)
         self.sender.sendto(eof_pkt, self.target)
+        print("------------------")
+        print(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}")
+        print(f"Resend rate:{self.resend_pkg_cnt / len(self.data_list)}")
+        with open("gbn_data.txt") as f:
+            f.write(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}")
+            f.write(f"Resend rate:{self.resend_pkg_cnt_pkg_cnt / len(self.data_list)}")
+
 
     def recv(self):
         if not os.path.exists(os.path.join(os.getcwd(), "recv")):
-            os.path.makedirs(os.path.join(os.getcwd(), "recv"))
+            os.makedirs(os.path.join(os.getcwd(), "recv"))
         f = open(os.path.join(os.getcwd(), "recv", self.file_name), "wb")
 
         recved_seq = -1
