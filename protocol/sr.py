@@ -36,6 +36,11 @@ class SR(object):
         self.lock.acquire()
         resend_pkt = make_pkt(seq_num, self.data_list[seq_num])
         self.sender.sendto(resend_pkt, self.target)
+        # 重启定时器
+        if self.timers[seq_num].is_alive():
+            self.timers[seq_num].cancel()
+        self.timers[seq_num] = threading.Timer(self.timeout, self.timeout_handler, args=[seq_num])
+        self.timers[seq_num].start()
         print(f"Timeout, resend {seq_num}")
         self.lock.release()
 
