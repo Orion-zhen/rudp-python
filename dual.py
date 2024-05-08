@@ -32,7 +32,7 @@ if __name__ == "__main__":
         from protocol.gbn import GBN
         instance = GBN(args.file, sender, target, recver, args.window_size, args.timeout)
         
-    th_send = threading.Thread(target=instance.send, daemon=True)
-    th_recv = threading.Thread(target=instance.recv, daemon=True)
+    th_send = threading.Thread(target=instance.send)
+    th_recv = threading.Thread(target=instance.recv)
     th_send.start()
     th_recv.start()
