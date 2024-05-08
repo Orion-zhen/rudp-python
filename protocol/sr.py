@@ -106,7 +106,7 @@ class SR(object):
             # if random.random() < 0.1:
             #     print("丢包")
             #     continue
-            print(f"{addr}: {recved_seq}")
+            print(f"{addr}: {recved_seq}. length: {len(payload)}")
             state[recved_seq] = True
             
             for i, s in enumerate(state):
