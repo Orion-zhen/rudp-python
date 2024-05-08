@@ -17,3 +17,7 @@ parser.add_argument("--window-size", "-ws", type=int, default=10, help="窗口�
 parser.add_argument("--timeout", "-to", type=int, default=3, help="超时时间")
 
 parser.add_argument("--file", "-f", type=str, default="./send/mirror.png", help="发送文件的路径")
+
+parser.add_argument("--remote", "-rm", default=False, action="store_true", help="在云服务器上选这个")
+
+parser.add_argument("--local", "-l", default=False, action="store_true", help="在本地运行")
