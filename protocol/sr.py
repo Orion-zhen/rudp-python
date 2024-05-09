@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import socket
 import threading
@@ -99,6 +100,13 @@ class SR(object):
             base_seq = ack_seq
             print(f"recv ack {ack_seq}")
 
+        print("------------------")
+        print(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}")
+        print(f"Resend rate:{self.lost_pkg_cnt / len(self.data_list)}")
+        with open("sr_data.txt", 'w') as f:
+            f.write(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}\n")
+            f.write(f"Resend rate:{self.lost_pkg_cnt / len(self.data_list)}\n")
+        sys.exit()
         eof_pkt = make_pkt(len(self.data_list), "".encode(), True)
         self.sender.sendto(eof_pkt, self.target)
         print("------------------")
