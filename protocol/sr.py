@@ -110,7 +110,7 @@ class SR(object):
         print(f"Resend rate:{self.lost_pkg_cnt / len(self.data_list)}")
         with open("sr_data.txt", 'w') as f:
             f.write(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}\n")
-            f.write(f"Resend rate:{self.lost_pkg_cnt / len(self.data_list)}\n")
+            f.write(f"Resend rate:{self.resend_pkg_cnt / len(self.data_list)}\n")
 
     def recv(self):
         # 是否收到对应的包
