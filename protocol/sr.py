@@ -36,7 +36,7 @@ class SR(object):
             self.timers[i] = threading.Timer(self.timeout, self.timeout_handler, args=[i])
 
     def timeout_handler(self, seq_num):
-        self.lock.acquire()
+        # self.lock.acquire()
         resend_pkt = make_pkt(seq_num, self.data_list[seq_num])
         self.sender.sendto(resend_pkt, self.target)
         # 重启定时器
@@ -47,7 +47,7 @@ class SR(object):
         print(f"Timeout, resend {seq_num}")
         self.lost_pkg_cnt += 1
         self.resend_pkg_cnt += 1
-        self.lock.release()
+        # self.lock.release()
 
     def send(self):
         seq_to_send = 0
@@ -59,6 +59,10 @@ class SR(object):
         # 发送体
         while True:
             if all(s == "ACKED" for s in state):
+                # 确保每个计时器都已结束
+                for i in range(len(self.timers)):
+                    if self.timers[i].is_alive():
+                        self.timers[i].cancel()
                 break
 
             # 当窗口未满时, 试图填充窗口
@@ -111,6 +115,7 @@ class SR(object):
         with open("sr_data.txt", 'w') as f:
             f.write(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}\n")
             f.write(f"Resend rate:{self.resend_pkg_cnt / len(self.data_list)}\n")
+        # return
 
     def recv(self):
         # 是否收到对应的包
