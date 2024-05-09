@@ -102,7 +102,7 @@ class SR(object):
             # 向后滑动窗口
             base_seq = ack_seq
             print(f"recv ack {ack_seq}")
-        lost_pkg_set += len(lost_pkg_set)
+        self.lost_pkg_cnt += len(lost_pkg_set)
         eof_pkt = make_pkt(len(self.data_list), "".encode(), True)
         self.sender.sendto(eof_pkt, self.target)
         print("------------------")
