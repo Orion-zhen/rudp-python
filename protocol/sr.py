@@ -106,7 +106,7 @@ class SR(object):
         with open("sr_data.txt", 'w') as f:
             f.write(f"Lost rate:{self.lost_pkg_cnt / len(self.data_list)}\n")
             f.write(f"Resend rate:{self.lost_pkg_cnt / len(self.data_list)}\n")
-        sys.exit()
+        # sys.exit()
         eof_pkt = make_pkt(len(self.data_list), "".encode(), True)
         self.sender.sendto(eof_pkt, self.target)
         print("------------------")
@@ -129,16 +129,19 @@ class SR(object):
             #     print("丢包")
             #     continue
             print(f"{addr}: {recved_seq}. length: {len(payload)}")
-            state[recved_seq] = True
+            if recved_seq < len(state):
+                state[recved_seq] = True
             
             for i, s in enumerate(state):
                 if not s:
                     # 第一个未收到的包
                     self.recver.sendto(str(i).encode(), addr)
                     break
-                
+        
+        self.recver.sendto(str(len(state)).encode(), addr)
+        
         if not os.path.exists(os.path.join(os.getcwd(), "recv")):
-            os.path.makedirs(os.path.join(os.getcwd(), "recv"))
+            os.makedirs(os.path.join(os.getcwd(), "recv"))
         with open(os.path.join(os.getcwd(), "recv", self.file_name), "wb") as f:
             for data in self.data_list:
                 f.write(data)
